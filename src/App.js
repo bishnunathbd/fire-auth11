@@ -29,9 +29,26 @@ function App() {
         };
         setUser(signedInUser);
       })
-      .then(err => {
+      .catch(err => {
         console.log(err);
         console.log(err.message);
+      })
+  }
+
+  // sign out
+  const handleSignOut = () => {
+    firebase.auth().signOut()
+      .then(res => {
+        const signedOutUser = {
+          isSignedIn: false,
+          name: '',
+          email: '',
+          photo: ''
+        };
+        setUser(signedOutUser);
+      })
+      .catch(err => {
+
       })
   }
 
@@ -39,7 +56,10 @@ function App() {
     <div className="App">
       <h2>React Authentication Using Firebase</h2>
       <br />
-      <button onClick={handleGoogleSignIn}>Google Sign In</button>
+      {
+        user.isSignedIn ? <button onClick={handleSignOut}>Sign out</button>
+          : <button onClick={handleGoogleSignIn}>Google Sign in</button>
+      }
       {
         user.isSignedIn && <div>
           <p>Welcome, {user.name}</p>
