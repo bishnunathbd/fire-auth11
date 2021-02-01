@@ -48,8 +48,24 @@ function App() {
         setUser(signedOutUser);
       })
       .catch(err => {
-
+        // an error happened
       })
+  }
+
+  const handleInputBlur = (e) => {
+    console.log(e.target.name, e.target.value);
+    if (e.target.name === 'email') {
+      const isEmailValid = /\S+@\S+\.\S+/.test(e.target.value);
+    }
+    if (e.target.name === 'password') {
+      const isPasswordValid = e.target.value.length > 6;
+      const hasPasswordNumber = /\d{1}/.test(e.target.value);
+      console.log(isPasswordValid && hasPasswordNumber);
+    }
+  }
+
+  const handleSubmit = () => {
+
   }
 
   return (
@@ -67,6 +83,15 @@ function App() {
           <img src={user.photo} style={{ width: '25%' }} alt="" />
         </div>
       }
+
+      <h2>Our own Authentication</h2>
+      <form onSubmit={handleSubmit}>
+        <input type="text" name="email" onBlur={handleInputBlur} placeholder="Your Email Address" required />
+        <br />
+        <input type="password" name="password" onBlur={handleInputBlur} id="" placeholder="Your Password" required />
+        <br />
+        <input type="submit" value="Submit"/>
+      </form>
     </div>
   );
 }
