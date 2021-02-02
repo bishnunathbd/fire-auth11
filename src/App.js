@@ -4,7 +4,9 @@ import "firebase/auth";
 import firebaseConfig from './firebase.config';
 import { useState } from 'react';
 
-firebase.initializeApp(firebaseConfig);
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 function App() {
   const [user, setUser] = useState({
@@ -12,7 +14,9 @@ function App() {
     name: '',
     email: '',
     password: '',
-    photo: ''
+    photo: '',
+    error: '',
+    success: false
   });
 
   // Google sign in 
@@ -44,7 +48,9 @@ function App() {
           isSignedIn: false,
           name: '',
           email: '',
-          photo: ''
+          photo: '',
+          error: '',
+          success: false
         };
         setUser(signedOutUser);
       })
@@ -54,25 +60,42 @@ function App() {
   }
 
   const handleInputBlur = (e) => {
-    let isFormValid = true;
+    let isFieldValid = true;
+    // debugger;
     if (e.target.name === 'email') {
-      isFormValid = /\S+@\S+\.\S+/.test(e.target.value);
+      isFieldValid = /\S+@\S+\.\S+/.test(e.target.value);
     }
     if (e.target.name === 'password') {
       const isPasswordValid = e.target.value.length > 6;
       const hasPasswordNumber = /\d{1}/.test(e.target.value);
-      isFormValid = isPasswordValid && hasPasswordNumber;
+      isFieldValid = isPasswordValid && hasPasswordNumber;
     }
 
-    if (isFormValid) {
+    if (isFieldValid) {
       const newUserInfo = { ...user };
       newUserInfo[e.target.name] = e.target.value;
       setUser(newUserInfo);
     }
   }
 
-  const handleSubmit = () => {
-
+  const handleSubmit = (e) => {
+    // console.log(user.email, user.password);
+    if (user.email && user.password) {
+      firebase.auth().createUserWithEmailAndPassword(user.email, user.password)
+        .then((userCredential) => {
+          const newUserInfo = { ...user };
+          newUserInfo.error = '';
+          newUserInfo.success = true;
+          setUser(newUserInfo);
+        })
+        .catch((error) => {
+          const newUserInfo = { ...user };
+          newUserInfo.error = error.message;
+          newUserInfo.success = false;
+          setUser(newUserInfo);
+        });
+    }
+    e.preventDefault();
   }
 
   return (
@@ -92,9 +115,6 @@ function App() {
       }
 
       <h2>Our own Authentication</h2>
-      <p>Your Name: {user.name}</p>
-      <p>Your Email: {user.email}</p>
-      <p>Your Password: {user.password}</p>
 
       <form onSubmit={handleSubmit}>
         <input type="text" name="name" onBlur={handleInputBlur} placeholder="Your Name" />
@@ -105,6 +125,8 @@ function App() {
         <br />
         <input type="submit" value="Submit" />
       </form>
+      <p style={{ color: 'red' }}>{user.error}</p>
+      { user.success && <p style={{ color: 'green' }}>User created successfully.</p>}
     </div>
   );
 }
